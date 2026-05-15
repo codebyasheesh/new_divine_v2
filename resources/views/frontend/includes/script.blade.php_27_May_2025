@@ -1,0 +1,384 @@
+    {{-- Back To Top --}}
+    <div id="back-to-top" style="display: none;">
+     <a class="p-0 btn btn-sm position-fixed top border-0 text-white" id="top" href="#top">
+        <svg width="30" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+           <path d="M5 15.5L12 8.5L19 15.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+              stroke-linejoin="round"></path>
+        </svg>
+     </a>
+    </div>
+    {{-- Back To Top --}}
+    
+    {{-- Library Bundle Script --}}
+    <script src="{{ asset('frontend_assets/js/core/libs.min.js') }}"></script>
+    {{-- Plugin Scripts --}}
+    
+    <!-- Flatpickr Script -->
+    @if(Route::currentRouteName() === 'book_appointment')
+    <script src="{{asset('frontend_assets/vendor/flatpickr/dist/flatpickr.min.js')}}"></script>
+    <script src="{{asset('frontend_assets/js/plugins/flatpickr.js')}}" defer></script>
+    @endif
+      
+      {{-- Bootstrap Bundle Script --}}
+
+    {{-- Slider-tab Script --}}
+    <script src="{{asset('frontend_assets/js/plugins/slider-tabs.js')}}"></script>
+    
+    {{-- fslightbox Script --}}
+    <script src="{{asset('frontend_assets/js/plugins/fslightbox.js')}}" defer></script>
+    
+    {{-- Sweet-alert Script --}}
+    <script src="{{asset('frontend_assets/vendor/sweetalert2/dist/sweetalert2.min.js')}}" async></script>
+    <script src="{{asset('frontend_assets/js/plugins/sweet-alert.js')}}" defer></script>
+    
+    {{-- SwiperSlider Script --}}
+    <script src="{{asset('frontend_assets/vendor/swiperSlider/swiper-bundle.min.js')}}"></script>
+    {{-- Lodash Utility --}}
+    <script src="{{asset('frontend_assets/vendor/lodash/lodash.min.js')}}"></script>
+    {{-- Utilities Functions --}}
+    <script src="{{asset('frontend_assets/js/iqonic-script/utility.min.js')}}"></script>
+    {{-- Settings Script --}}
+    <script src="{{ asset('frontend_assets/js/iqonic-script/setting.min.js') }}"></script>
+    {{-- Settings Init Script --}}
+    <script src="{{asset('frontend_assets/js/iqonic-script/setting-init.js')}}"></script>
+    {{-- External Library Bundle Script --}}
+    <script src="{{asset('frontend_assets/js/core/external.min.js')}}"></script>
+    {{-- Kivicare Script --}}
+    <script src="{{asset('frontend_assets/js/kivicare.js?v=1.4.1')}}" defer></script>
+    <script src="{{asset('frontend_assets/js/kivicare-advance.js?v=1.4.1')}}" defer></script>
+    {{-- Kivicare Pages Script --}}
+    <script src="{{asset('frontend_assets/js/slider.js')}}" defer></script>
+    <script src="{{asset('frontend_assets/js/scroll-text.js')}}" defer></script>
+
+    {{-- SweetAlert2 Success Message --}}
+@if(Session::has('success'))
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            Swal.fire({
+                icon: 'success',
+                title: 'Success!',
+                text: '{{ Session::get('success') }}',
+            });
+        });
+    </script>
+@endif
+@if(Session::has('error'))
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: '{{ Session::get('error') }}'
+            });
+        });
+    </script>
+@endif
+
+@auth
+<script>
+    $('#appointment_dt').change(function (){
+        var appointment_dt = $(this).val();
+        const checkboxes = document.querySelectorAll('.service-checkbox');
+        const selected = [];
+        checkboxes.forEach((checkbox) => {
+            if (checkbox.checked) {
+                selected.push(checkbox.value);
+            }
+        });
+
+        if(selected.length === 0) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: 'Please select at least one service!'
+            });
+            return false;
+        }
+
+        // console.log(`Appointment Date: ${appointment_dt}, Services: ${selected}` );
+        $.ajaxSetup({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            }
+        });
+
+        let url = '{{route("check_availability")}}';
+        $.ajax({
+            type: 'post',
+            url: url,
+            data: {appoint_dt:appointment_dt, services:selected},
+            cache: false,
+            dataType: 'json',
+            beforeSend: function() {
+            },
+            success: function(html) {
+                if (html.status == '200') {
+                    $('#req_duration').html('');
+                    $('#req_duration').html(`You Need Total Duration: ${html.duration} minutes`);
+                    $('#time_slots_div').html('');
+                    $('#time_slots_div').html(html.message);
+                }
+                if (html.code == '404') {
+                    $('#req_duration').html('');
+                    $('#time_slots_div').html('');
+                }
+            }
+        });
+    });
+
+    $(document).on('click', '.slot_brd', function() {
+        var slots = $('.slot_brd');
+        var startIndex = slots.index(this);
+        var requiredDuration = parseInt($(this).data('duration')); // e.g. 90
+        var slotCount = Math.ceil(requiredDuration / 30); // e.g. 3 for 90 min
+        slots.removeClass('slot_highlight');
+        $('#selection_error').html('');
+
+        // Define morning and evening slot arrays (must match your slot values)
+        var morningSlots = [
+            "09:30am", "10:00am", "10:30am", "11:00am", "11:30am",
+            "12:00pm", "12:30pm", "01:00pm", "01:30pm", "02:00pm"
+        ];
+        var eveningSlots = [
+            "04:00pm", "04:30pm", "05:00pm", "05:30pm",
+            "06:00pm", "06:30pm", "07:00pm"
+        ];
+
+        // Get the clicked slot time
+        var clickedTime = $(this).data('value');
+        // Determine which range the clicked slot is in
+        var isMorning = morningSlots.includes(clickedTime);
+        var isEvening = eveningSlots.includes(clickedTime);
+
+        // Get the relevant slot array and its start index
+        var rangeSlots = isMorning ? morningSlots : (isEvening ? eveningSlots : []);
+
+        var rangeStartIndex = rangeSlots.indexOf(clickedTime);
+
+       // Check if enough consecutive slots are available in the selected range
+        if (rangeStartIndex !== -1 && (rangeStartIndex + slotCount) <= rangeSlots.length) {
+            // Check for engaged & disable_slots in the required range
+            let canSelect = true;
+            for (var i = 0; i < slotCount; i++) {
+                let $slot = slots.filter('[data-value="' + rangeSlots[rangeStartIndex + i] + '"]');
+                
+                if ($slot.hasClass('engaged') || $slot.hasClass('disable_slots')) {
+                    canSelect = false;
+                    break;
+                }
+            }
+            if (canSelect) {
+                // Highlight the slots in the DOM
+                for (var i = 0; i < slotCount; i++) {
+                    slots.filter('[data-value="' + rangeSlots[rangeStartIndex + i] + '"]').addClass('slot_highlight');
+                }
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: 'One or more slots are engaged and unavailable in the selected duration!'
+                });
+            }
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: 'Required duration does not fit in this slot range!'
+            });
+        }
+    });
+
+    // On Select Customer name show the customer details in patient Info Section
+</script> 
+ @if(Route::currentRouteName() === 'book_appointment') 
+    <script>
+        $(document).on('change', '#customer', function() {
+            let booking_dt = $('#appointment_dt').val();
+            let customer_id = $(this).val();
+            let members = @json($members);
+            let member = members.find(member => member.id == customer_id);
+            if(member) {
+                $('#cust_nm').html(member.name);
+                $('#cust_nm_hdn').val(member.name);
+
+                $('#cust_mob').html(member.mobile);
+                $('#cust_mob_hdn').val(member.mobile);
+
+                $('#cust_email').html(member.email);
+                $('#cust_email_hdn').val(member.email);
+            }
+            else {
+                $('#cust_nm').html('');
+                $('#cust_nm_hdn').val('');
+
+                $('#cust_mob').html('');
+                $('#cust_mob_hdn').val('');
+
+                $('#cust_email').html('');
+                $('#cust_email_hdn').val('');
+            }
+
+            // print service which are selected in first step
+            let selectedServices = [];
+            let total_price = 0;
+            $('.service-checkbox:checked').each(function() {
+                let service_id = $(this).val();
+                let ser_nm = $(`#nmspan_${service_id}`).html();
+                let ser_price = $(`#prc_${service_id}`).html();
+
+                // show the selected services with it's price.                
+                $('#show_choose_services, #show_choose_services_fnl').append(`<tr>
+                                <td class="p-0 border-0">
+                                    <h6 class="mb-2">${ser_nm}</h6>
+                                </td>
+                                <td class="p-0 border-0">
+                                    <p class="mb-2 ps-2 text-start">${ser_price}</p>
+                                </td>
+                                </tr>`);
+                total_price += parseFloat(ser_price.replace(/[^0-9.-]+/g,""));
+                // selectedServices.push($(this).val());
+            });
+
+            // Format the booking date to show in next step
+            let dateObj = new Date(booking_dt);
+            let formatted = dateObj.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+            });
+            $('#booking_dt').html(formatted);  // Show the Booking Date
+            $('#booking_dt_fnl').html(formatted);  // Show the Booking Date
+            $('#price_lbl, #price_lbl_fnl').html(`$${total_price}`); // Show the Total Booking Price
+            $('#total_price').val(total_price); // set the total price in hidden field
+            
+            // Get All Selected Slots data-value in array to show in booking summary
+            let selectedSlots = [];
+            $('.slot_brd.slot_highlight').each(function () {
+                selectedSlots.push($(this).data('value'));
+            });
+
+            $('#booking_slots_h6, #booking_slots_h6_fnl').html(selectedSlots.join(', '));
+            // print service which are selected in first step
+
+        });
+
+
+        // Final Booking Confirmation
+        const confirm_appointment = () => {
+            let booking_dt = $('#appointment_dt').val(); // get booking date
+            let customer_id = $('#customer').val(); // get customer id
+            let customer_name = $('#cust_nm_hdn').val();    // get customer name
+            let customer_email = $('#cust_email_hdn').val(); // get customer email
+            let customer_mobile = $('#cust_mob_hdn').val(); // get customer mobile
+            let message = $('#message').val(); // get message
+            let total_price = $('#total_price').val(); // get total price
+            // Get selected payment method
+            let payment_method = $('input[name="payment_method"]:checked').val();
+            // get Selected Services
+            const checkboxes = document.querySelectorAll('.service-checkbox');
+            const selected_services = [];
+            checkboxes.forEach((checkbox) => {
+                if (checkbox.checked) {
+                    selected_services.push(checkbox.value);
+                }
+            });
+
+            // Service Validation
+            if(selected_services.length === 0) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: 'Please select at least one service!'
+                });
+                $('#step_1').show();
+                $('#step_2').hide();
+                return false;
+            }
+
+            // get Selected Slots
+            let selectedSlots = [];
+            $('.slot_brd.slot_highlight').each(function () {
+                selectedSlots.push($(this).data('value'));
+            });
+
+            let stp_5 = document.getElementById('step_5');
+            let stp_6 = document.getElementById('step_6');
+            if(!payment_method && $('#step_5_tab').hasClass('active') && stp_6.style.display !== 'none') {
+                Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: 'Please select a Payment Method First!'
+                });
+                // $('#step_5_tab').removeClass('done');
+                stp_5.style.display = 'none';
+                stp_6.style.display = '';
+                return false;
+            }
+
+            $.ajaxSetup({
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                }
+            });
+            $.ajax({
+                type: 'post',
+                url: '{{route("process_booking")}}',
+                data: {
+                    appoint_dt: booking_dt,
+                    customer_id: customer_id,
+                    customer_name: customer_name,
+                    customer_email: customer_email,
+                    customer_mobile: customer_mobile,
+                    message: message,
+                    total_price: total_price,
+                    services: selected_services,
+                    slots: selectedSlots,
+                    payment_method: payment_method
+                },
+                cache: false,
+                dataType: 'json',
+                beforeSend: function() {
+                },
+                success: function(html) {
+                    if (html.status == '200') {
+                        $('#booking_res_h4').html(html.message);
+                        // Reset hidden fields
+                        $('#cust_nm_hdn, #cust_email_hdn, #cust_mob_hdn, #total_price').val('');
+                        // Reset visible fields
+                        $('#cust_nm, #cust_email, #cust_mob, #booking_dt, #booking_dt_fnl, #price_lbl, #price_lbl_fnl, #booking_slots_h6, #booking_slots_h6_fnl').html('');
+
+                        // Reset checkboxes and radio buttons
+                        $('.service-checkbox').prop('checked', false);
+                        $('input[name="payment_method"]').prop('checked', false);
+
+                        // Remove slot highlights
+                        $('.slot_brd').removeClass('slot_highlight');
+
+                        // Reset selects and other fields if needed
+                        $('#customer').val('');
+                        $('#appointment_dt').val('');
+                        $('#message').val('');
+
+                        $("#appointment-tab-list").find(".active").addClass("done");
+                        $('.confirm-button').parents(".appointment-content-active").fadeOut("slow", function () {
+                            $('.confirm-button').next(".appointment-content-active").fadeIn("slow");
+                        });
+                        $('#step_7').css('display', 'block');
+
+                    } else if (html.status == 500) {
+                        $('#success_icon').html('');
+                        $('#fail_icon').html(`<img src="{{asset('frontend_assets/images/circle-close.svg')}}"`);
+                        $('#booking_res_h4').html(html.message);
+                    }
+                }
+            });
+
+
+
+        }
+    </script>
+ @endif   
+@endauth
+    {{-- SweetAlert2 Error Message --}}
+    
+    {{-- Custom Script --}}

@@ -1,0 +1,13 @@
+
+/vendor
+.env
+.env.backup
+.env.production
+.vscode
+document.txt
+app/Http/Controllers/AppointmentController_28_Dec_25.txt
+app/Http/Controllers/Appointment_controller.txt
+create_invoice_blade_with_fixService.txt
+create_invoice_index_blade.txt which will from appointment.txt
+project_requirements.txt
+views/frontend/medical_form.blade-copy-working-large-form.php

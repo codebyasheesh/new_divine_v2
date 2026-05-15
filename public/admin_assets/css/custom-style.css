@@ -1,0 +1,141 @@
+/* Success (Green) Switch */
+.form-switch.form-switch-success .form-check-input:checked {
+    background-color: #198754; /* Bootstrap success color */
+    border-color: #198754;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23fff'/%3e%3c/svg%3e");
+}
+/* Danger (Red) Switch - for the "off" state */
+.form-switch.form-switch-danger .form-check-input {
+    background-color: #dc3545; /* Bootstrap danger color */
+    border-color: #dc3545;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23fff'/%3e%3c/svg%3e");
+}
+
+/* Ensure the danger color is removed when it is checked (becomes active) */
+.form-switch.form-switch-danger .form-check-input:checked {
+    background-color: #198754; /* Back to green on check */
+    border-color: #198754;
+}
+
+.img-circle {
+    border-radius: 50%;
+}
+.profile-user-img {
+    border: 3px solid #adb5bd;
+    margin: 0 auto;
+    padding: 3px;
+    width: 100px;
+}
+.profile-username {
+    font-size: 21px;
+    margin-top: 5px;
+}
+.post {
+    border-bottom: 1px solid #adb5bd;
+    color: #666;
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+}
+.post .user-block {
+    margin-bottom: 15px;
+    width: 100%;
+}
+.user-block .username {
+    font-size: 16px;
+    font-weight: 600;
+    margin-top: -1px;
+    margin-left: 10px;
+}
+.user-block .description {
+    color: #6c757d;
+    font-size: 13px;
+    margin-top: -3px;
+    margin-left: 50px;
+    display: block;
+}
+.btn-tool {
+    background-color: transparent;
+    color: #adb5bd;
+    font-size: .875rem;
+    margin: -.75rem 0;
+    padding: .25rem .5rem;
+}
+.float-right {
+    float: right !important;
+}
+.btn-group.show .btn-tool, .btn-tool:hover {
+    color: #495057;
+}
+.user-block img {
+    float: left;
+    height: 40px;
+    width: 40px;
+}
+
+/* Booking Slot Css */
+.slot_brd {
+    border: 1px solid #2BAF2B;
+}
+
+.slot_brd:hover {
+    background-color: #2BAF2B!important;
+    border: 1px solid #2BAF2B;
+    color: #fff!important;
+    cursor: pointer;
+}
+
+.slot_highlight {
+    background-color: #2BAF2B!important;
+    border: 1px solid #2BAF2B;
+    color: #fff!important;
+    cursor: pointer;
+}
+
+.disable_slots {
+    background-color: #f85d03!important;
+    border: 1px solid #3f3f3f;
+    color: #ffffff!important;
+    cursor: not-allowed!important;
+}
+
+.other_disable_slots {
+    background-color: #f82803!important;
+    border: 1px solid #3f3f3f;
+    color: #ffffff!important;
+    cursor: not-allowed!important;
+}
+
+.blocked_slot {
+    background-color: #999797!important; color: #FFFFFF!important;
+}
+
+.lunch_slot {
+    background: #ffd93d !important;
+    color: black !important;
+}
+
+
+.time_brd {
+    border: 1px solid #f50303;
+}
+
+.time_brd:hover {
+    background-color: #f50303!important;
+    border: 1px solid #f50303;
+    color: #fff!important;
+    cursor: pointer;
+}
+
+.time_highlight {
+    background-color: #f50303!important;
+    border: 1px solid #f50303;
+    color: #fff!important;
+    cursor: pointer;
+}
+
+.disable_times {
+    background-color: #adadad!important;
+    border: 1px solid #3f3f3f;
+    color: #222222!important;
+    cursor: not-allowed;
+}
